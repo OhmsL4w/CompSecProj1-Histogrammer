@@ -1,59 +1,114 @@
 #include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <ctype.h>
-#include <stdio.h>
+
+
 using namespace std;
 
+void AsciiChars() {
+	cout << ('|');
+	for (int i = 0; i < 256; ++i) {
+		//char asciiChar = <char>(i);
+		if (char(i) >= 32 && char(i) <= 126) {
+			cout << char(i);
+		}
+		else {
+			cout << ' ';
+		}
+	}
+	cout << ('|') << endl;
+}
 
+void numsInThreeRows() {
+
+	for (int j = 0; j < 3; j++) {
+		cout << ('|');
+		for (int i = 0; i < 256; ++i) {
+			if (j == 0) {
+				if (i / 100 == 0) {
+					cout << ' ';
+				}
+				else {
+					cout << i / 100;
+				}
+			}
+			else if (j == 1) {
+				if (i / 10 == 0) {
+					cout << ' ';
+				}
+				else {
+					cout << (i / 10) % 10;
+				}
+
+			}
+			else {
+				cout << i % 10;
+
+			}
+		}
+		cout << ('|') << endl;
+	}
+}
 
 int main(int argc, char* argv[]) {
-	// validate user input and check thers only 1 param
-	// open the file 
-	// loop throuhg the file byte by byte and increment counts for each character
-
-	int freq[256] = {};
-
-	//if (argc != 2) {
-	//	cout << "incorrect number of arguments";
-	//	return 1;
-	//}
-	std::ifstream ifs;
-	ifs.open("Hamlet.txt", ifstream::in | ifstream::binary); // change this to argv[1] when done testing 
 	
-		if (ifs.good() == false) {
-		cout << "Error: could not open the file";
+	int freq[256] = {};
+	int rowNum = 20; // -rnn change when done testing
+	bool displayAsciiGraph = false;
+	bool displayNumsInThreeRows = false;
+	bool displayLogarithmic = false;
+	bool noGraph = false;
+	string fileName ; // change this to argv[1] when done testing
+	if (argc != 2) {
+		cout << "incorrect number of arguments";
 		return 1;
 	}
-		cout << "file opened successfully" << endl;
+	std::ifstream ifs;
+	for (int i = 1; i < argc; ++i) {
+		if (argv[i][0] == '-') {
+			if (argv[i][1] == 'r') {
+				rowNum = atoi(argv[i] + 2);
+			}
+			else if (argv[i][1] == 'a') {
+				displayAsciiGraph = true;
+			}
+			else if (argv[i][1] == 'n') {
+				displayNumsInThreeRows = true;
+			}
+			else if (argv[i][1] == 'l') {
+				displayLogarithmic = true;
+			}
+			else if (argv[i][1] == 'g') {
+				noGraph = true;
+			}
+			else {
+				cout << "invalid argument";
+				return 1;
+			}
+		}
+		else if (i == 1) {
+			fileName = argv[i];
+		}
+		else {
+			cout << "invalid argument";
+			return 1;
+		}
+	}
+	ifs.open(fileName, ifstream::in | ifstream::binary);  
+	
+	if (ifs.good() == false) {
+	cout << "Input file not found" << endl;
+	return 1;
+	}
+	cout << "file opened successfully" << endl;
 
 	unsigned char byte = ifs.get();
 	int totalbytes{};
-	while (!ifs.eof())
-	{
+	while (!ifs.eof()) {
 		totalbytes++;
 		freq[byte]++;
 		byte = ifs.get();
 	}
-
-	//for (int i = 0; i < 32; i++){
-	//	cout << setw(3) << i << setw(7) << freq[i] << " || "
-	//	<< setw(3) << i + 32 << setw(7) << freq[i + 32] << " || "
-	//	<< setw(3) << i + 64 << setw(7) << freq[i + 64] << " || "
-	//	<< setw(3) << i + 96 << setw(7) << freq[i + 96] << " || "
-	//	<< setw(3) << i + 128 << setw(7) << freq[i + 128] << " || "
-	//	<< setw(3) << i + 160 << setw(7) << freq[i + 160] << " || "
-	//	<< setw(3) << i + 192 << setw(7) << freq[i + 192] << " || "
-	//	<< setw(3) << i + 224 << setw(7) << freq[i + 224] << endl;
-	//}
-	//cout << endl<< "Total bytes read were: " << totalbytes;
-
-	//so far this code reads in the entire file and gets the frequency of all the characters that occur in the file, 
-	//TO DO: implement the graph
-	//TO DO: implement the scaling to scale everythihng using an algorithm
-	//TO DO: add all the exceptions and error handling 
 
 	int maxFreq = 0;
 	for (int i = 0; i < 256; i++) {
@@ -61,50 +116,76 @@ int main(int argc, char* argv[]) {
 			maxFreq = freq[i];
 		}
 	}
-	int rowNum = 20;
+
 	double scale = (double)maxFreq / rowNum;
-	vector<string> graph(rowNum, string(256, ' '));
+	char graph[10][256];
 
 	for (int i = 0; i < 256; i++) {
 		int height = (int)(freq[i] / scale);
-		for (int row = rowNum -1; row >= rowNum - height ; --row) {
+		for (int row = rowNum - 1; row >= rowNum - height; --row) {
 			graph[row][i] = '*';
 		}
 	}
-	graph.insert(graph.begin(), string(256, '-'));
-	graph.push_back(string(256, '-'));
-	for (string& row : graph) {
-		row.insert(row.begin(), '|');
-		row.push_back('|');
-	}
-	graph.front().front() = '+';
-	graph.front().back() = '+';
-	graph.back().front() = '+';
-	graph.back().back() = '+';
-
-	for (const string& row : graph) {
-		cout << row << '\n';
-	}
-	cout<<('|');
-	/*for (int i = 0; i < 256; i++)
-	{
-		cout << char(i);
-		if (i < 255) {
-			cout << " ";
+	if (noGraph == false) {
+		// Print the top border
+		cout << '+';
+		for (int i = 0; i < 256; i++) {
+			cout << '-';
 		}
-	}*/
-	for (int i = 0; i < 256; ++i) {
-		//char asciiChar = <char>(i);
-		if (char(i) >= 32 && char(i) <= 126) {
-			cout << char(i);
-		}	
+		cout << '+' << endl;
+		if (displayLogarithmic == true) {
+			// Logarithmic display
+			// Calculate the scaling factor for logarithmic display
+			double logScale = log10(1 + maxFreq) / rowNum;
+
+			// Print the graph logarithmically
+			for (int row = 0; row < rowNum; row++) {
+				cout << '|';
+				for (int col = 0; col < 256; col++) {
+					// Calculate the height logarithmically
+					int height = (int)(log10(1 + freq[col]) / logScale);
+					if (row >= rowNum - height) {
+						cout << '*';
+					}
+					else {
+						cout << ' ';
+					}
+				}
+				cout << '|' << endl;
+			}
+		}
 		else {
-			cout << ' ';
+			// Print the graph
+			for (int row = 0; row < rowNum; row++) {
+				cout << '|';
+				for (int col = 0; col < 256; col++) {
+					if (graph[row][col] == '*') {
+						cout << '*';
+					}
+					else {
+						cout << ' ';
+					}
+				}
+				cout << '|' << endl;
+			}
 		}
-		
-		
+
+		// Print the bottom border
+		cout << '+';
+		for (int i = 0; i < 256; i++) {
+			cout << '-';
+		}
+		cout << '+' << endl;
+
+		if (displayNumsInThreeRows == true) {
+			numsInThreeRows();
+		}
+		if (displayAsciiGraph == true) {
+			AsciiChars();
+		}
+
 	}
-	cout << ('|');
+	
 
-
+	return 0;
 }
